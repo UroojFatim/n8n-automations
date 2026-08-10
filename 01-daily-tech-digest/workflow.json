@@ -1,0 +1,102 @@
+{
+  "name": "Daily Tech Digest",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "id": "a1000000-0000-4000-8000-000000000001",
+      "name": "Every day at 9am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-220, 0]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cfg-1",
+              "name": "minPoints",
+              "value": 100,
+              "type": "number"
+            },
+            {
+              "id": "cfg-2",
+              "name": "topN",
+              "value": 10,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1000000-0000-4000-8000-000000000002",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "url": "https://hn.algolia.com/api/v1/search?tags=front_page",
+        "options": {}
+      },
+      "id": "a1000000-0000-4000-8000-000000000003",
+      "name": "Fetch Hacker News",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "hits",
+        "options": {}
+      },
+      "id": "a1000000-0000-4000-8000-000000000004",
+      "name": "Split Out Stories",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const cfg = $('Config').first().json;\n\nconst stories = $input.all()\n  .filter(item => item.json.points > cfg.minPoints)\n  .sort((a, b) => b.json.points - a.json.points)\n  .slice(0, cfg.topN);\n\nconst digest = stories.map((item, i) => {\n  const s = item.json;\n  const link = s.url || `https://news.ycombinator.com/item?id=${s.objectID}`;\n  return `${i + 1}. ${s.title}\\n   ${s.points} points · ${s.num_comments} comments\\n   ${link}`;\n}).join('\\n\\n');\n\nreturn [{\n  json: {\n    subject: `Tech Digest — ${new Date().toLocaleDateString('en-GB')}`,\n    body: digest,\n    storyCount: stories.length\n  }\n}];"
+      },
+      "id": "a1000000-0000-4000-8000-000000000005",
+      "name": "Build Digest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 0]
+    }
+  ],
+  "connections": {
+    "Every day at 9am": {
+      "main": [[{ "node": "Config", "type": "main", "index": 0 }]]
+    },
+    "Config": {
+      "main": [[{ "node": "Fetch Hacker News", "type": "main", "index": 0 }]]
+    },
+    "Fetch Hacker News": {
+      "main": [[{ "node": "Split Out Stories", "type": "main", "index": 0 }]]
+    },
+    "Split Out Stories": {
+      "main": [[{ "node": "Build Digest", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "local"
+  },
+  "tags": []
+}

@@ -1,0 +1,17 @@
+# Never commit these
+.env
+.env.*
+*.key
+*.pem
+credentials.json
+database.sqlite
+.n8n/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
