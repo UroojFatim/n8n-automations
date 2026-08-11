@@ -9,7 +9,7 @@ Each folder is a standalone project with its own README, an importable `workflow
 | # | Project | Concepts | Status |
 |---|---|---|---|
 | 01 | [Daily Tech Digest](./01-daily-tech-digest) | Schedule triggers, HTTP requests, item model, Code node | ✅ |
-| 02 | Webhook to Sheets Logger | Webhooks, OAuth credentials, data mapping | 🔜 |
+| 02 | [Webhook Lead Logger](./02-webhook-sheets-logger) | Webhooks, OAuth credentials, data mapping, deferred responses | ✅ |
 | 03 | Gmail Auto-Triage | Conditional logic, branching, Merge | 🔜 |
 | 04 | Paginated API Scraper | Loops, pagination, rate limiting, deduplication | 🔜 |
 | 05 | AI Email Summarizer | LLM nodes, structured output parsing | 🔜 |
