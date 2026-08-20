@@ -1,0 +1,242 @@
+{
+  "name": "Gmail Auto-Triage",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "c3000000-0000-4000-8000-000000000001",
+      "name": "When clicking 'Execute workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-440, 0]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "getAll",
+        "limit": 50,
+        "simple": true,
+        "filters": {}
+      },
+      "id": "c3000000-0000-4000-8000-000000000002",
+      "name": "Get many messages",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [-220, 0],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "rule-academic",
+                    "leftValue": "={{ /assignment|exam|result|semester|transcript|quiz|attendance|course|lecture/i.test($json.Subject || '') || /\\.edu(\\.pk)?\\b/i.test($json.From || '') }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Academic"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "rule-jobs",
+                    "leftValue": "={{ /interview|application|hiring|opportunity|recruiter/i.test($json.Subject || '') }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Jobs"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "rule-newsletters",
+                    "leftValue": "={{ /newsletter|unsubscribe|digest|weekly/i.test($json.Subject || '') || $json.labels.some(l => ['CATEGORY_PROMOTIONS','CATEGORY_SOCIAL','CATEGORY_UPDATES'].includes(l.name)) }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Newsletters"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Fallback"
+        }
+      },
+      "id": "c3000000-0000-4000-8000-000000000003",
+      "name": "Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": ["REPLACE_WITH_ACADEMIC_LABEL_ID"]
+      },
+      "id": "c3000000-0000-4000-8000-000000000004",
+      "name": "Label Academic",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [240, -220],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": ["REPLACE_WITH_JOBS_LABEL_ID"]
+      },
+      "id": "c3000000-0000-4000-8000-000000000005",
+      "name": "Label Jobs",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [240, -60],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": ["REPLACE_WITH_NEWSLETTERS_LABEL_ID"]
+      },
+      "id": "c3000000-0000-4000-8000-000000000006",
+      "name": "Label Newsletters",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [240, 100],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": ["REPLACE_WITH_TO_REVIEW_LABEL_ID"]
+      },
+      "id": "c3000000-0000-4000-8000-000000000007",
+      "name": "Label To Review",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [240, 260],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "c3000000-0000-4000-8000-000000000008",
+      "name": "Triaged",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [480, 0]
+    }
+  ],
+  "connections": {
+    "When clicking 'Execute workflow'": {
+      "main": [[{ "node": "Get many messages", "type": "main", "index": 0 }]]
+    },
+    "Get many messages": {
+      "main": [[{ "node": "Switch", "type": "main", "index": 0 }]]
+    },
+    "Switch": {
+      "main": [
+        [{ "node": "Label Academic", "type": "main", "index": 0 }],
+        [{ "node": "Label Jobs", "type": "main", "index": 0 }],
+        [{ "node": "Label Newsletters", "type": "main", "index": 0 }],
+        [{ "node": "Label To Review", "type": "main", "index": 0 }]
+      ]
+    },
+    "Label Academic": {
+      "main": [[{ "node": "Triaged", "type": "main", "index": 0 }]]
+    },
+    "Label Jobs": {
+      "main": [[{ "node": "Triaged", "type": "main", "index": 0 }]]
+    },
+    "Label Newsletters": {
+      "main": [[{ "node": "Triaged", "type": "main", "index": 0 }]]
+    },
+    "Label To Review": {
+      "main": [[{ "node": "Triaged", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Karachi"
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "local"
+  },
+  "tags": []
+}
