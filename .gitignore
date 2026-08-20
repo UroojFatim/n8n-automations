@@ -1,6 +1,4 @@
 # Never commit these
-.env
-.env.*
 *.key
 *.pem
 credentials.json
@@ -13,5 +11,6 @@ Thumbs.db
 desktop.ini
 
 # Editors
-.vscode/ 
 .idea/
+config.bat
+node_modules
